@@ -1,0 +1,29 @@
+Wrote new keypair to /home/vscode/.config/solana/id.json
+=============================================================================
+pubkey: ATB1HWfcWVSwqZBxUAeqdmStBrsQcvDdjWBWvP7hdq5H
+=============================================================================
+Save this seed phrase and your BIP39 passphrase to recover your new keypair:
+proof hockey soda artwork easy found person express early matrix help giraffe
+=============================================================================
+
+
+
+
+
+^^ FOR TESTING PURPOSE ONLY!
+
+1. make sure you have rust, solana-cli, anchor-cli and amman
+2. start amman server "amman start"
+3a. create a new wallet solana-keygen new -o /home/vscode/.config/solana/id.json
+3. airdrop some tokens to you via "amman airdrop <address> -o"
+4. change solana network to amman network "solana config set --url localhost"
+5. anchor deploy --you'll get a program id, paste it on anchor.toml and lib.rs on actual solana connected
+6. build
+7. run test first by typing "anchor test --skip-local-validator"
+8. deploy now
+9. cd to ./app
+10. type yarn
+11. copy the contents of target/idl/<name>.json to public/program.json and types/<name>.json
+12. try running and cross finger it works
+13a. if you have no token, just airdorp yourself again
+13b. the browser console will help you alot.

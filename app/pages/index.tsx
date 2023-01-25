@@ -22,13 +22,19 @@ const WalletMultiButtonDynamic = dynamic(
 
 function NoteView({
   initializeNote,
+  addNote,
   note,
   wallet,
 }: {
   initializeNote: () => void;
+  addNote: (title: string, body: string) => void;
   note: any;
   wallet: any;
 }) {
+
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+
   if (!wallet) {
     return (
       <div className="flex flex-col items-center justify-center p-4">
@@ -49,7 +55,7 @@ function NoteView({
     );
   }
 
-  console.log(note);
+  // console.log(note);
 
   return (
     <div className="flex flex-col p-4">
@@ -85,11 +91,15 @@ function NoteView({
                 type="text"
                 className="p-2 border"
                 placeholder="Insert Title Here"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
               />
               <input
                 type="text"
                 className="p-2 border"
                 placeholder="Insert Content Here"
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
               />
             </div>
             <div className="d-modal-action">
@@ -97,7 +107,9 @@ function NoteView({
                 htmlFor="add-notes-modal"
                 className="d-btn"
                 onClick={() => {
-                  alert("clicked");
+                  addNote(title, body);
+                  setTitle("");
+                  setBody("");
                 }}
               >
                 Add Note
@@ -108,9 +120,11 @@ function NoteView({
         <div>
           {note.notesList.map((note: any, i: number) => {
             return (
-              <div key={i} className="flex flex-col gap-2">
-                <div className="text-lg">{note.title}</div>
-                <div className="text-base">{note.content}</div>
+              <div key={i} className="flex flex-col gap-2 shadow d-card">
+                <div className="d-card-body">
+                  <div className="text-lg font-bold">{note.title}</div>
+                  <div className="text-base">{note.content}</div>
+                </div>
               </div>
             );
           })}
@@ -144,7 +158,7 @@ export default function Home() {
       provider
     ) as unknown as Program<R23AnchorFePdaNotes>;
     programRef.current = program;
-    console.log("Done initProgram");
+    console.log("Done initProgram " + idl.metadata.address);
   }
 
   async function fetchNote() {
@@ -201,6 +215,43 @@ export default function Home() {
         .rpc();
 
       console.log(await fetchNote());
+      setNote(await fetchNote());
+
+
+      // Console log current notes
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function addNote(title: string, body: string) {
+    console.log(anchorWallet, programRef.current);
+    if (!anchorWallet || !programRef.current) {
+      return;
+    }
+
+    const program = programRef.current;
+
+    try {
+      // Calculate the PDA address
+      const [pda] = PublicKey.findProgramAddressSync(
+        [Buffer.from("notes-data-20221214"), anchorWallet.publicKey.toBuffer()],
+        program.programId
+      );
+
+      await program.methods
+        .addNewNote(
+          title,
+          body,
+          new BN(0),
+        )
+        .accounts({
+          notesData: pda,
+          user: anchorWallet.publicKey,
+        })
+        .rpc();
+
+      setNote(await fetchNote());
 
       // Console log current notes
     } catch (err) {
@@ -228,6 +279,7 @@ export default function Home() {
       <NoteView
         wallet={anchorWallet}
         initializeNote={initializeNote}
+        addNote={addNote}
         note={note}
       ></NoteView>
     </div>
